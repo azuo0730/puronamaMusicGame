@@ -17,7 +17,6 @@ public class MusicManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-
 		m_gridMoveTmp = 0.0f;
 
 		float zOffset = 0;
@@ -31,15 +30,29 @@ public class MusicManager : MonoBehaviour {
 			zOffset += zOffsetAdd;
 		}
 	}
-	
+
 	// Update is called once per frame
 	void Update ()
+	{
+		// グリッドを流す
+		MoveGrid();
+		// 加速度センサ
+		MoveAcc();
+	}
+
+
+
+	/// <summary>
+	/// グリッドを流す処理
+	/// </summary>
+	private void MoveGrid()
 	{
 		float moveAdd = 0.01f;
 		float depthMax = 1.0f;
 		m_gridMoveTmp += moveAdd;
 
-		for (int i=0; i<m_gridObject.Count; i++)
+		// グリッドを流す処理
+		for (int i = 0; i < m_gridObject.Count; i++)
 		{
 			Transform trans = m_gridObject[i].transform;
 			Vector3 newPos = trans.position;
@@ -55,6 +68,20 @@ public class MusicManager : MonoBehaviour {
 			m_gridMoveTmp -= depthMax;
 		}
 	}
+
+	/// <summary>
+	/// 加速度センサの値チェック処理
+	/// </summary>
+	private void MoveAcc()
+	{
+		Vector3 acc = Input.acceleration;
+		string debugText = "Acc X : " + acc.x.ToString("000.00000" + "\n");
+		debugText += "Acc Y : " + acc.y.ToString("000.00000" + "\n");
+		debugText += "Acc Z : " + acc.z.ToString("000.00000" + "\n");
+
+		Debug.DebugText("AccDebug", debugText);
+	}
 }
+
 
 
