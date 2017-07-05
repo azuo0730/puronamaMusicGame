@@ -11,7 +11,8 @@ public class MusicManager : MonoBehaviour {
 	/// グリッドのデフォルト表示座標
 	private readonly Vector3 GRID_DEFAULT_DRAW_POS = new Vector3(0.0f, 0.72f, 0.5f);
 
-	private GameObject m_gridManager;
+	private GameObject	m_gridManager;
+	private float		m_gridScrollPos;				// グリッドのスクロール位置
 
 	// Use this for initialization
 	void Start () {
@@ -44,18 +45,26 @@ public class MusicManager : MonoBehaviour {
 	/// </summary>
 	private void MoveGrid()
 	{
-		float moveAdd = 0.01f;
-		float depthMax = 1.0f;
-
 		// グリッドを流す処理
 		Transform trans = m_gridManager.transform;
 		Vector3 newPos = trans.position;
-		newPos.z += moveAdd;
-		if (newPos.z >= depthMax)
-		{
-			newPos.z -= depthMax;
-		}
+		newPos.z = m_gridScrollPos;
 		trans.SetPositionAndRotation(newPos, trans.rotation);
+	}
+
+	/// <summary>
+	/// グリッドのスクロール位置を設定する
+	/// </summary>
+	/// <param name="pos">グリッドのスクロール位置</param>
+	public void SetGridScrollPos(float pos)
+	{
+		m_gridScrollPos = pos;
+
+		float depthMax = 1.0f;
+		while (m_gridScrollPos >= depthMax)
+		{
+			m_gridScrollPos -= depthMax;
+		}
 	}
 
 	/// <summary>
