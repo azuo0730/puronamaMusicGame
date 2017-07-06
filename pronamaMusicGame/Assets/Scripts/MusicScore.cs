@@ -40,6 +40,7 @@ public class MusicScore : MonoBehaviour {
 		~Note(){}
 
 		public float GetTiming(){ return m_timing; }
+		public Vector3 GetRotate() { return m_rotate; }
 		public GameObject GetObj(){ return m_obj; }
 		public void SetObj(GameObject obj){ m_obj = obj; }
 
@@ -69,8 +70,16 @@ public class MusicScore : MonoBehaviour {
 		m_scoreNoteList.Add(new Note(6.0f, new Vector3(0.0f, 0.0f, 0.0f)));
 		m_scoreNoteList.Add(new Note(6.5f, new Vector3(0.0f, 0.0f, 0.0f)));
 		m_scoreNoteList.Add(new Note(7.0f, new Vector3(0.0f, 0.0f, 0.0f)));
-		m_scoreNoteList.Add(new Note(7.25f, new Vector3(0.0f, 0.0f, 0.0f)));
-		m_scoreNoteList.Add(new Note(7.5f, new Vector3(0.0f, 0.0f, 0.0f)));
+
+		m_scoreNoteList.Add(new Note(10.0f, new Vector3(0.0f, 0.0f, 30.0f)));
+		m_scoreNoteList.Add(new Note(11.0f, new Vector3(0.0f, 0.0f, 30.0f)));
+		m_scoreNoteList.Add(new Note(12.0f, new Vector3(0.0f, 0.0f, -30.0f)));
+		m_scoreNoteList.Add(new Note(13.0f, new Vector3(0.0f, 0.0f, -30.0f)));
+		m_scoreNoteList.Add(new Note(14.0f, new Vector3(0.0f, 0.0f, 30.0f)));
+		m_scoreNoteList.Add(new Note(15.0f, new Vector3(0.0f, 0.0f, 30.0f)));
+		m_scoreNoteList.Add(new Note(16.0f, new Vector3(0.0f, 0.0f, -30.0f)));
+		m_scoreNoteList.Add(new Note(17.0f, new Vector3(0.0f, 0.0f, -30.0f)));
+		m_scoreNoteList.Add(new Note(18.0f, new Vector3(0.0f, 0.0f, 0.0f)));
 
 #if true
 		m_musicResourceName = "Music/Prefab/oldest dreamer";
@@ -122,8 +131,12 @@ public class MusicScore : MonoBehaviour {
 				if( m_scoreNoteList[i].GetObj() == null )
 				{
 					// 新規作成
-					Vector3 pos = new Vector3(0, 0, -m_scoreNoteList[i].GetTiming()) + m_scoreManager.transform.position;
+					Vector3 pos = new Vector3(0, 0, -m_scoreNoteList[i].GetTiming());
+					pos += m_scoreManager.transform.position;
 					m_scoreNoteList[i].SetObj( Instantiate(Resources.Load("Line/Prefab/Note"), pos, Quaternion.identity, m_scoreManager.transform) as GameObject );
+
+					Quaternion target = Quaternion.Euler(m_scoreNoteList[i].GetRotate());
+					m_scoreNoteList[i].GetObj().transform.GetChild(0).transform.rotation = target;
 				}
 			}
 		}
@@ -131,7 +144,9 @@ public class MusicScore : MonoBehaviour {
 		if((m_timeElapsed - m_noteStartOffset) >= 0)
 		{
 			float scrollPos = (m_timeElapsed - m_noteStartOffset) * m_noteScrollSpeed;
-			m_scoreManager.transform.position = new Vector3(0, 0, scrollPos);
+			Vector3 newPos = m_scoreManager.transform.position;
+			newPos.z = scrollPos;
+			m_scoreManager.transform.position = newPos;
 			m_musicManager.SetGridScrollPos(scrollPos);
 		}
 	}

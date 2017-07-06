@@ -13,6 +13,7 @@ public class MusicManager : MonoBehaviour {
 
 	private GameObject	m_gridManager;
 	private float		m_gridScrollPos;				// グリッドのスクロール位置
+	private GameObject	m_frameObj;						// フレームオブジェクト
 
 	// Use this for initialization
 	void Start () {
@@ -27,6 +28,9 @@ public class MusicManager : MonoBehaviour {
 			if( tmp == null ) break;
 			zOffset += zOffsetAdd;
 		}
+
+		m_frameObj = GameObject.Find("Frame");
+		if (m_frameObj == null) return;
 	}
 
 	// Update is called once per frame
@@ -78,6 +82,9 @@ public class MusicManager : MonoBehaviour {
 		debugText += "Acc Z : " + acc.z.ToString("000.00000" + "\n");
 
 		Debug.DebugText("AccDebug", debugText);
+
+		Quaternion target = Quaternion.Euler(0, 0, -acc.x*90);
+		m_frameObj.transform.rotation = target;
 	}
 }
 
