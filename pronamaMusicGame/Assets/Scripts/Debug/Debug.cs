@@ -90,8 +90,8 @@ public class Debug : MonoBehaviour {
 		/// </returns>
 		public bool Update()
 		{
-			if( DeleteCounter > 0 ) DeleteCounter--;
-			if( DeleteCounter == 0 ) return true;
+			if( DeleteCounter >= 0 ) DeleteCounter--;
+			if( DeleteCounter < 0 ) return true;
 			return false;
 		}
 	}

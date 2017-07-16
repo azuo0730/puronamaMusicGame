@@ -15,6 +15,10 @@ public class MusicManager : MonoBehaviour {
 	private float		m_gridScrollPos;				// グリッドのスクロール位置
 	private GameObject	m_frameObj;						// フレームオブジェクト
 
+	private Vector3		m_beforeAcc;					// 1F前の加速度センサの値
+
+	public MusicScore	m_musicScore;					// スコア管理クラス
+
 	// Use this for initialization
 	void Start () {
 		float zOffset = 0;
@@ -22,15 +26,20 @@ public class MusicManager : MonoBehaviour {
 		m_gridManager = GameObject.Find("MusicScore/GridManager");
 		if(m_gridManager == null) return;
 
+		GameObject tmp;
 		for (int i=0; i<GRID_DRAW_NUM; i++)
 		{
-			GameObject tmp = Instantiate(GRID_OBJECT, GRID_DEFAULT_DRAW_POS + new Vector3(0, 0, zOffset), Quaternion.identity, m_gridManager.transform) as GameObject;
+			tmp = Instantiate(GRID_OBJECT, GRID_DEFAULT_DRAW_POS + new Vector3(0, 0, zOffset), Quaternion.identity, m_gridManager.transform) as GameObject;
 			if( tmp == null ) break;
 			zOffset += zOffsetAdd;
 		}
 
 		m_frameObj = GameObject.Find("Frame");
 		if (m_frameObj == null) return;
+
+		tmp = GameObject.Find("MusicScore");
+		if( tmp == null ) return;
+		m_musicScore = tmp.GetComponent<MusicScore>();
 	}
 
 	// Update is called once per frame
@@ -40,6 +49,9 @@ public class MusicManager : MonoBehaviour {
 		MoveGrid();
 		// 加速度センサ
 		MoveAcc();
+
+		// タッチでノートを消す
+		TapNote();
 	}
 
 
@@ -81,10 +93,48 @@ public class MusicManager : MonoBehaviour {
 		debugText += "Acc Y : " + acc.y.ToString("000.00000" + "\n");
 		debugText += "Acc Z : " + acc.z.ToString("000.00000" + "\n");
 
-		Debug.DebugText("AccDebug", debugText);
-
 		Quaternion target = Quaternion.Euler(0, 0, -acc.x*90);
 		m_frameObj.transform.rotation = target;
+		m_gridManager.transform.rotation = target;
+
+		// 1F前の値と比較して, 角度が一定以上, 長さも一定以上差があれば
+		float angle = Vector3.Angle(acc, m_beforeAcc);
+		float len = acc.sqrMagnitude;
+		float befLen = m_beforeAcc.sqrMagnitude;
+
+		debugText += "angle : " + angle.ToString("000.00000" + "\n");
+		debugText += "len  : " + len.ToString("000.00000" + "\n");
+		debugText += "len2 : " + befLen.ToString("000.00000" + "\n");
+		Debug.DebugText("AccDebug", debugText);
+
+/*		if ( angle >= 90 )
+		{
+
+			if( len - 10.0f >= befLen )
+			{
+				Debug.DebugText("Shock", "Shock!!!!!!!!!!!!!!!!!!!!!!!", 0, 0, 1);
+			}
+		}
+*/
+		m_beforeAcc = acc;
+	}
+
+	/// <summary>
+	/// タップでノートを消す
+	/// </summary>
+	void TapNote()
+	{
+		if( Input.GetMouseButtonDown(0) )				// タッチ開始
+		{
+			Note note = m_musicScore.GetTargetNote();
+			if( note != null )
+			{
+				// 距離を測定
+
+
+				// 
+			}
+		}
 	}
 }
 

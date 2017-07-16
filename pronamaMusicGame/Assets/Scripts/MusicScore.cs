@@ -9,6 +9,8 @@ public class MusicScore : MonoBehaviour {
 
 	// 楽曲譜面を制御する用メンバ
 	List<Note>			m_scoreNoteList;			// 譜面１曲分全部のノート
+	int					m_targetScoreNoteNo;		// 今タップしたらこれが対象ってノート番号
+
 	float				m_timeElapsed;				// 経過時間
 	string				m_musicResourceName;		// 楽曲名
 	float				m_bgmBPM;					// 楽曲のBPM
@@ -21,35 +23,6 @@ public class MusicScore : MonoBehaviour {
 
 
 	float				m_noteStartOffset;			// BGMを再生から, ノートをスクロール開始するオフセット
-
-	/// <summary>
-	/// 譜面１つを管理するクラス
-	/// </summary>
-	private class Note
-	{
-		private float			m_timing;
-		private Vector3			m_rotate;
-		private GameObject		m_obj;
-
-		public Note(float timing, Vector3 rotate)
-		{
-			m_timing = timing;
-			m_rotate = rotate;
-			m_obj = null;
-		}
-		~Note(){}
-
-		public float GetTiming(){ return m_timing; }
-		public Vector3 GetRotate() { return m_rotate; }
-		public GameObject GetObj(){ return m_obj; }
-		public void SetObj(GameObject obj){ m_obj = obj; }
-
-		public void SetObjPos(Vector3 pos)
-		{
-			if( m_obj == null ) return;
-			m_obj.transform.position = pos;
-		}
-	}
 
 
 	// Use this for initialization
@@ -110,6 +83,8 @@ public class MusicScore : MonoBehaviour {
 		if (tmp == null) return;
 		m_musicManager = tmp.GetComponent<MusicManager>();
 		if (m_musicManager == null) return;
+
+		m_targetScoreNoteNo = 0;
 	}
 
 	// Update is called once per frame
@@ -122,6 +97,7 @@ public class MusicScore : MonoBehaviour {
 		}
 
 		Debug.DebugText("TimeElapsed", m_timeElapsed.ToString("00000.00"), 0, 32);
+		Debug.DebugText("TimeElapsed", m_targetScoreNoteNo.ToString("0"), 0, 48);
 
 		float showTime = m_timeElapsed + 5.0f;
 		for(int i=0; i< m_scoreNoteList.Count; i++)
@@ -148,6 +124,37 @@ public class MusicScore : MonoBehaviour {
 			newPos.z = scrollPos;
 			m_scoreManager.transform.position = newPos;
 			m_musicManager.SetGridScrollPos(scrollPos);
+
+			// ターゲット設定
+			if( m_targetScoreNoteNo < m_scoreNoteList.Count )
+			{
+				float timing = m_scoreNoteList[m_targetScoreNoteNo].GetTiming();
+				float timing2 = m_scoreNoteList[m_targetScoreNoteNo].GetTiming();
+				if( m_targetScoreNoteNo+1 < m_scoreNoteList.Count ){
+					timing2 = m_scoreNoteList[m_targetScoreNoteNo+1].GetTiming();
+				}
+
+				float dist1 = timing - scrollPos;
+				float dist2 = timing2 - scrollPos;
+				if( dist1 < 0 ) dist1 *= -1;
+				if( dist2 < 0 ) dist2 *= -1;
+
+				// 次のノートの方が近かったら, ターゲットを次のノートに変える
+				if( dist1 > dist2 ) m_targetScoreNoteNo++;
+			}
 		}
+	}
+
+	/// <summary>
+	/// ターゲットのノートを取得する
+	/// </summary>
+	/// <returns>ターゲットのノート</returns>
+	public Note GetTargetNote()
+	{
+		if( m_targetScoreNoteNo < m_scoreNoteList.Count )
+		{
+			return m_scoreNoteList[m_targetScoreNoteNo];
+		}
+		return null;
 	}
 }
