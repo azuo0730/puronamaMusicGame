@@ -11,6 +11,9 @@ public class MusicManager : MonoBehaviour {
 	/// グリッドのデフォルト表示座標
 	private readonly Vector3 GRID_DEFAULT_DRAW_POS = new Vector3(0.0f, 0.72f, 0.5f);
 
+	float				m_currentTime;					// 経過時間
+	AudioSource			m_bgmAudioSource;				// 楽曲BGM再生用オーディオ
+
 	private GameObject	m_gridManager;
 	private float		m_gridScrollPos;				// グリッドのスクロール位置
 	private GameObject	m_frameObj;						// フレームオブジェクト
@@ -23,6 +26,7 @@ public class MusicManager : MonoBehaviour {
 	void Start () {
 		float zOffset = 0;
 		float zOffsetAdd = -1.0f;
+		// オブジェクトの生成, 初期化
 		m_gridManager = GameObject.Find("MusicScore/GridManager");
 		if(m_gridManager == null) return;
 
@@ -40,11 +44,17 @@ public class MusicManager : MonoBehaviour {
 		tmp = GameObject.Find("MusicScore");
 		if( tmp == null ) return;
 		m_musicScore = tmp.GetComponent<MusicScore>();
+
+		// その他変数初期化
+		m_currentTime = 0;
 	}
 
 	// Update is called once per frame
 	void Update ()
 	{
+		bool ret = InitMusic();
+		if( ret == false ) return;				// 楽曲読み込みに失敗
+
 		// グリッドを流す
 		MoveGrid();
 		// 加速度センサ
@@ -54,18 +64,50 @@ public class MusicManager : MonoBehaviour {
 		TapNote();
 	}
 
+	/// <summary>
+	/// 楽曲を初期化する
+	/// </summary>
+	/// <returns>true = 成功, false = 失敗</returns>
+	private bool InitMusic()
+	{
+		GameObject tmp;
+		if( m_bgmAudioSource == null )
+		{
+			tmp = GameObject.Find("BGMAudioSource") as GameObject;
+			if( tmp == null ) return false;
+			m_bgmAudioSource = tmp.GetComponent<AudioSource>();
+			if(m_bgmAudioSource == null) return false;
 
+			if( m_musicScore == null ) return false;
+			tmp = Instantiate(Resources.Load(m_musicScore.GetMusicResourceName())) as GameObject;
+			if (tmp == null) return false;
+			AudioSource audioSource = tmp.GetComponent<AudioSource>();
+			if(audioSource == null) return false;
+			m_bgmAudioSource.clip = audioSource.clip;
+
+			if (m_bgmAudioSource.isPlaying == false)
+			{
+				m_bgmAudioSource.Play();
+			}
+		}
+
+		return true;
+	}
 
 	/// <summary>
 	/// グリッドを流す処理
 	/// </summary>
 	private void MoveGrid()
 	{
+		m_currentTime = m_bgmAudioSource.time;					// 楽曲の経過時間から, スクロール位置を決める
+
 		// グリッドを流す処理
 		Transform trans = m_gridManager.transform;
 		Vector3 newPos = trans.position;
 		newPos.z = m_gridScrollPos;
 		trans.SetPositionAndRotation(newPos, trans.rotation);
+
+		Debug.DebugText("TimeElapsed", m_currentTime.ToString("00000.00"), 0, 32);
 	}
 
 	/// <summary>
@@ -122,7 +164,7 @@ public class MusicManager : MonoBehaviour {
 	/// <summary>
 	/// タップでノートを消す
 	/// </summary>
-	void TapNote()
+	private void TapNote()
 	{
 		if( Input.GetMouseButtonDown(0) )				// タッチ開始
 		{
@@ -130,11 +172,18 @@ public class MusicManager : MonoBehaviour {
 			if( note != null )
 			{
 				// 距離を測定
-
-
 				// 
 			}
 		}
+	}
+
+	/// <summary>
+	/// 現在の楽曲経過時間を取得する
+	/// </summary>
+	/// <returns>現在の楽曲経過時間</returns>
+	public float GetCurrentTime()
+	{
+		return m_currentTime;
 	}
 }
 
